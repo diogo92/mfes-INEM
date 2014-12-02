@@ -1,0 +1,56 @@
+class Hospital -- Represents a Health Unit
+
+	types
+		public Locations = token; -- Location of a Health Unit
+		public Capacity = nat; -- Max patient capacity
+		public Patient :: braceletColor: <RED>|<YELLOW>|<GREEN>; -- Patients waiting to be assigned
+		public Medic = token; -- Medics available in the hospital
+		public Vehicle = token; -- Vehicles available in the hospital to provide emergency assistance
+		public Emergency = token; -- Emergencies waiting for assistance from one or more vehicles
+		public HospitalAssignment = inmap Medic to Patient; -- Assignment from a doctor to a patient
+		public EmergencyAssignment = inmap Vehicle to Emergency; -- Vehicle assistance to an emergency
+		
+	instance variables
+		public static waitingList: seq of Patient :=[];
+		public static availableMedics: seq of Medic :=[];
+		public static unavailableMedics: seq of Medic :=[];
+		public static availableVehicles: seq of Vehicle :=[];
+		public static unavailableVehicles: seq of Vehicle :=[];
+	operations
+	
+		-- Assigns a medic, if avaliable
+		public static assignMedicToPatient(p:Patient,m:Medic,initialAssignment: HospitalAssignment) 
+		finalAssignment: HospitalAssignment ==
+		(
+		dcl auxAssignment: HospitalAssignment := {|->};
+		auxAssignment := (auxAssignment :-> {p}) munion {m |-> p};
+		waitingList := remove[Patient](p,waitingList);
+		availableMedics := remove[Medic](m,availableMedics);
+		unavailableMedics := unavailableMedics^[m];
+		return auxAssignment; 
+		)
+		pre
+			--Medic is available and in medics list
+			elemExists[Medic](availableMedics,m)
+	
+			and -- Patient in patients list
+			elemExists[Patient](waitingList,p)
+	
+		post
+			-- Assigned medic removed from available list, and respective patient removed from waiting list
+			not elemExists[Medic](availableMedics,m) and not elemExists[Patient](waitingList,p)
+		;
+		
+		
+		-- Put a patient in the waiting list
+		public static 
+	functions
+	
+		-- Checks if element is in list
+		public elemExists[@T](s:seq of @T,m:@T) res: bool ==
+			 m in set elems s;
+			 
+		public remove[@T](e: @T, s: seq of @T) res: seq of @T ==
+    	[s(i) | i in set inds s & s(i) <> e];
+	
+end Hospital
