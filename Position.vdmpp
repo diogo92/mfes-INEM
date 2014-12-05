@@ -1,0 +1,16 @@
+class Position
+							types
+							-- TODO Define types here
+							values
+							-- TODO Define values here
+							instance variables
+										private contents : seq of int := [];
+										private capacity:  nat;
+										inv len contents <= capacity;
+							operations
+							-- TODO Define operations here
+							functions
+							-- TODO Define functiones here
+							traces
+							-- TODO Define Combinatorial Test Traces here
+end Position

@@ -14,10 +14,10 @@ class Hospital -- Represents a Health Unit
 		public static waitingList: seq of Patient :=[];
 		public static availableMedics: seq of Medic :=[];
 		public static unavailableMedics: seq of Medic :=[];
-		public static availableVehicles: seq of Vehicle :=[];
-		public static unavailableVehicles: seq of Vehicle :=[];
+		public static availableVehicles: seq of Transport :=[];
+		public static unavailableVehicles: seq of Transport :=[];
+		
 	operations
-	
 		-- Assigns a medic, if avaliable
 		public static assignMedicToPatient(p:Patient,m:Medic,initialAssignment: HospitalAssignment) 
 		finalAssignment: HospitalAssignment ==
@@ -43,9 +43,7 @@ class Hospital -- Represents a Health Unit
 		
 		
 		-- Put a patient in the waiting list
-		public static 
 	functions
-	
 		-- Checks if element is in list
 		public elemExists[@T](s:seq of @T,m:@T) res: bool ==
 			 m in set elems s;
