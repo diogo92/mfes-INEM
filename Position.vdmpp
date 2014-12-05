@@ -1,16 +1,24 @@
 class Position
-							types
-							-- TODO Define types here
-							values
-							-- TODO Define values here
-							instance variables
-										private contents : seq of int := [];
-										private capacity:  nat;
-										inv len contents <= capacity;
-							operations
-							-- TODO Define operations here
-							functions
-							-- TODO Define functiones here
-							traces
-							-- TODO Define Combinatorial Test Traces here
+
+	instance variables
+		public xcoord: real;
+		public ycoord: real;
+	
+	operations
+		public Position: real * real ==> Position
+			Position(x,y) == (
+				xcoord := x;
+				ycoord := y;
+				return self;
+			);
+		
+		public getDistance: real * real ==> real
+			getDistance(x,y) == (
+				return sqrt(((xcoord - x) * (xcoord - x)) + ((ycoord - y) * (ycoord - y)));
+			);
+
+	functions
+		sqrt(x: nat) r: real
+			post r * r = x and r >= 0
+
 end Position
