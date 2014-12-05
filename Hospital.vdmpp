@@ -1,51 +1,136 @@
 class Hospital -- Represents a Health Unit
-
 	types
+		public BraceletColor = <RED>|<YELLOW>|<GREEN>;
 		public Locations = token; -- Location of a Health Unit
 		public Capacity = nat; -- Max patient capacity
-		public Patient :: braceletColor: <RED>|<YELLOW>|<GREEN>; -- Patients waiting to be assigned
-		public Medic = token; -- Medics available in the hospital
-		public Vehicle = token; -- Vehicles available in the hospital to provide emergency assistance
-		public Emergency = token; -- Emergencies waiting for assistance from one or more vehicles
-		public HospitalAssignment = inmap Medic to Patient; -- Assignment from a doctor to a patient
-		public EmergencyAssignment = inmap Vehicle to Emergency; -- Vehicle assistance to an emergency
+		public Patient :: braceletColor: BraceletColor ; 
+		public Medic = token; 
+		public Vehicle = token;
+		public HospitalAssignment = inmap Medic to Patient; 
+		public EmergencyAssignment = inmap Vehicle to Patient; 
 		
 	instance variables
-		public static waitingList: seq of Patient :=[];
-		public static availableMedics: seq of Medic :=[];
-		public static unavailableMedics: seq of Medic :=[];
-		public static availableVehicles: seq of Vehicle :=[];
-		public static unavailableVehicles: seq of Vehicle :=[];
+		public capacity: Capacity :=0;
+		public waitingList: seq of Patient :=[]; -- Patients waiting to be assigned; there cannot be more patients than the hospital capacity
+		public availableMedics: seq of Medic :=[]; -- Medics available in the hospital
+		public unavailableMedics: seq of Medic :=[]; -- Medics assigned to an appointment with a patient
+		public availableVehicles: seq of Vehicle :=[]; -- Vehicles available in the hospital to provide emergency assistance
+		public unavailableVehicles: seq of Vehicle :=[]; -- Vehicles that are providing assistance to an emergency
+		public onGoingEmergencies: seq of Patient :=[]; -- Emergencies waiting for assistance from one or more vehicles
+		public hospitalAssignments: seq of HospitalAssignment :=[]; -- Assignments from  doctors to patients
+		public emergencyAssignments: seq of EmergencyAssignment :=[]; -- Vehicle assistances to emergencies
 	operations
 	
 		-- Assigns a medic, if avaliable
-		public static assignMedicToPatient(p:Patient,m:Medic,initialAssignment: HospitalAssignment) 
-		finalAssignment: HospitalAssignment ==
+		public assignMedicToPatient(p:Patient,m:Medic) ==
 		(
-		dcl auxAssignment: HospitalAssignment := {|->};
-		auxAssignment := (auxAssignment :-> {p}) munion {m |-> p};
-		waitingList := remove[Patient](p,waitingList);
-		availableMedics := remove[Medic](m,availableMedics);
-		unavailableMedics := unavailableMedics^[m];
-		return auxAssignment; 
+			
+			dcl auxAssignment: HospitalAssignment := {|->};
+			auxAssignment := (auxAssignment :-> {p}) munion {m |-> p};
+			waitingList := remove[Patient](p,waitingList);
+			availableMedics := remove[Medic](m,availableMedics);
+			unavailableMedics := unavailableMedics^[m];
+			hospitalAssignments := hospitalAssignments^[auxAssignment];
 		)
 		pre
 			--Medic is available and in medics list
 			elemExists[Medic](availableMedics,m)
-	
+			
 			and -- Patient in patients list
 			elemExists[Patient](waitingList,p)
 	
 		post
 			-- Assigned medic removed from available list, and respective patient removed from waiting list
-			not elemExists[Medic](availableMedics,m) and not elemExists[Patient](waitingList,p)
+			not elemExists[Medic](availableMedics,m) 
+			and elemExists[Medic](unavailableMedics,m)
+			and not elemExists[Patient](waitingList,p)
+			
+			-- Assignment is in hospital assignment list
+			and elemExists[HospitalAssignment](hospitalAssignments,{m|->p})
 		;
 		
 		
-		-- Put a patient in the waiting list
-		public static 
-	functions
+		-- Put a patient in the waiting list, freeing the vehicle that did the transportation
+		public putPatientInWaitingList(p:Patient,v:Vehicle,assignment:EmergencyAssignment) ==
+		(
+			unavailableVehicles := remove[Vehicle](v,unavailableVehicles);
+			availableVehicles := availableVehicles^[v];
+			waitingList := insertInOrder(waitingList,p);
+			emergencyAssignments := remove[EmergencyAssignment](assignment,emergencyAssignments);
+		)
+		pre
+			
+			-- Assigned emergency where patient was transported is in list
+			
+			assignment={v|->p} and assignment in set elems emergencyAssignments
+			
+		post
+		-- Patient must be in the waiting list
+			p in set elems waitingList and elemExists[Vehicle](availableVehicles,v)
+		-- Emergency not in assignment list
+			and not elemExists[EmergencyAssignment](emergencyAssignments,assignment)
+		;
+		
+		
+		-- A medic ends its apointment with a patient, freeing him
+		public freeMedic(m:Medic,p:Patient, assignment:HospitalAssignment) ==
+		(
+			unavailableMedics := remove[Medic](m,unavailableMedics);
+			availableMedics := availableMedics^[m];
+			hospitalAssignments := remove[HospitalAssignment](assignment,hospitalAssignments);
+		)
+		pre
+			-- Medic must be the one in the assigned apointment
+			assignment={m|->p} 
+			-- Hospital assignment in list
+			and assignment in set elems hospitalAssignments
+		post
+			-- Medic is free
+			m in set elems availableMedics
+			-- Assignment not in list
+			and not elemExists[HospitalAssignment](hospitalAssignments,assignment)
+		;
 	
+	-- Assign a vehicle to attend an emergency
+	public attendEmergency(p:Patient,v:Vehicle)==
+	(
+		dcl auxAssignment: EmergencyAssignment := {|->};
+			auxAssignment := (auxAssignment :-> {p}) munion {v |-> p};
+			availableMedics := remove[Vehicle](v,availableVehicles);
+			unavailableMedics := unavailableVehicles^[v];
+			emergencyAssignments := emergencyAssignments^[auxAssignment];
+	)
+	
+	pre
+		-- Bringing a patient must not overflow the capacity of the hospital
+			len waitingList < capacity and
+		-- Vehicle is available for emergency
+		elemExists[Vehicle](availableVehicles,v) and not elemExists[Vehicle](unavailableVehicles,v)
+	post
+		-- Vehicle is not available for other emergencies
+		elemExists[Vehicle](unavailableVehicles,v) and not elemExists[Vehicle](availableVehicles,v)
+		-- Emergency Assignment in list
+		and elemExists[EmergencyAssignment](emergencyAssignments,{v|->p})
+		;
+
+functions
+		public insertInOrder(s:seq of Patient,p:Patient) res: seq of Patient ==
+			if(p.braceletColor = <RED>) then(
+				if(not exists i in set inds s & s(i).braceletColor=<RED>)
+					then([p]^s)
+					else(
+						insertInOrder(tl s,p)
+					)
+			)
+			else if(p.braceletColor = <YELLOW>) then(
+				if(not exists i in set inds s & s(i).braceletColor=<RED> and not exists j in set inds s & s(j).braceletColor=<YELLOW>)
+					then([p]^s)
+					else(
+						insertInOrder(tl s,p)
+					)
+			)
+			else(s^[p])
+		;
 		-- Checks if element is in list
 		public elemExists[@T](s:seq of @T,m:@T) res: bool ==
 			 m in set elems s;
