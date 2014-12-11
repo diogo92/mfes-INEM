@@ -1,16 +1,19 @@
 class Hospital -- Represents a Health Unit
 	types
+		public HospitalLevel = nat;
 		public BraceletColor = <RED>|<YELLOW>|<GREEN>;
-		public Locations = token; -- Location of a Health Unit
-		public Capacity = nat; -- Max patient capacity
-		public Patient :: braceletColor: BraceletColor ; 
+		public Location = token; -- Location of a Health Unit
+		public PatientCapacity = nat; -- Max patient capacity
+		public MedicsInHospital = nat;
+		public Patient :: braceletColor: BraceletColor; 
 		public Medic = token; 
 		public Vehicle = token;
 		public HospitalAssignment = inmap Medic to Patient; 
 		public EmergencyAssignment = inmap Vehicle to Patient; 
 		
 	instance variables
-		public capacity: Capacity :=0;
+		public capacity: PatientCapacity :=0;
+		public level: HospitalLevel :=0;
 		public waitingList: seq of Patient :=[]; -- Patients waiting to be assigned; there cannot be more patients than the hospital capacity
 		public availableMedics: seq of Medic :=[]; -- Medics available in the hospital
 		public unavailableMedics: seq of Medic :=[]; -- Medics assigned to an appointment with a patient
@@ -21,9 +24,18 @@ class Hospital -- Represents a Health Unit
 		public emergencyAssignments: seq of EmergencyAssignment :=[]; -- Vehicle assistances to emergencies
 	operations
 	
+	
+		public Hospital: nat * nat * seq of Medic * seq of Vehicle ==> Hospital
+			Hospital(patientCap,hLevel,medics,vehicles) == (
+				capacity:= patientCap;
+				level:=hLevel;
+				availableMedics:=medics;
+				availableVehicles:=vehicles;
+				return self;
+			);
 		-- Assigns a medic, if avaliable
-		public assignMedicToPatient(p:Patient,m:Medic) ==
-		(
+		public assignMedicToPatient: Patient * Medic ==> ()
+		 assignMedicToPatient(p,m) == (
 			
 			dcl auxAssignment: HospitalAssignment := {|->};
 			auxAssignment := (auxAssignment :-> {p}) munion {m |-> p};
@@ -51,8 +63,8 @@ class Hospital -- Represents a Health Unit
 		
 		
 		-- Put a patient in the waiting list, freeing the vehicle that did the transportation
-		public putPatientInWaitingList(p:Patient,v:Vehicle,assignment:EmergencyAssignment) ==
-		(
+		public putPatientInWaitingList: Patient * Vehicle * EmergencyAssignment ==>()
+		 putPatientInWaitingList(p,v,assignment) ==(
 			unavailableVehicles := remove[Vehicle](v,unavailableVehicles);
 			availableVehicles := availableVehicles^[v];
 			waitingList := insertInOrder(waitingList,p);
@@ -73,8 +85,8 @@ class Hospital -- Represents a Health Unit
 		
 		
 		-- A medic ends its apointment with a patient, freeing him
-		public freeMedic(m:Medic,p:Patient, assignment:HospitalAssignment) ==
-		(
+		public freeMedic: Medic * Patient * HospitalAssignment ==>()
+		 freeMedic(m,p, assignment) ==(
 			unavailableMedics := remove[Medic](m,unavailableMedics);
 			availableMedics := availableMedics^[m];
 			hospitalAssignments := remove[HospitalAssignment](assignment,hospitalAssignments);
@@ -92,7 +104,8 @@ class Hospital -- Represents a Health Unit
 		;
 	
 	-- Assign a vehicle to attend an emergency
-	public attendEmergency(p:Patient,v:Vehicle)==
+	public attendEmergency: Patient * Vehicle ==>()
+	attendEmergency(p,v)==
 	(
 		dcl auxAssignment: EmergencyAssignment := {|->};
 			auxAssignment := (auxAssignment :-> {p}) munion {v |-> p};
@@ -114,6 +127,7 @@ class Hospital -- Represents a Health Unit
 		;
 
 functions
+
 		public insertInOrder(s:seq of Patient,p:Patient) res: seq of Patient ==
 			if(p.braceletColor = <RED>) then(
 				if(not exists i in set inds s & s(i).braceletColor=<RED>)
