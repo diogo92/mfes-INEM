@@ -2,26 +2,29 @@ class Hospital -- Represents a Health Unit
 	types
 		public HospitalLevel = nat;
 		public BraceletColor = <RED>|<YELLOW>|<GREEN>;
+		--public Location = Position;
 		public Location = token; -- Location of a Health Unit
 		public PatientCapacity = nat; -- Max patient capacity
 		public MedicsInHospital = nat;
+		--public Patient = Patient;
 		public Patient :: braceletColor: BraceletColor; 
-		public Medic = token; 
+	  public Medic = token; 
+	  --public Vehicle = Transport;
 		public Vehicle = token;
 		public HospitalAssignment = inmap Medic to Patient; 
 		public EmergencyAssignment = inmap Vehicle to Patient; 
 		
 	instance variables
-		public capacity: PatientCapacity :=0;
-		public level: HospitalLevel :=0;
-		public waitingList: seq of Patient :=[]; -- Patients waiting to be assigned; there cannot be more patients than the hospital capacity
-		public availableMedics: seq of Medic :=[]; -- Medics available in the hospital
-		public unavailableMedics: seq of Medic :=[]; -- Medics assigned to an appointment with a patient
-		public availableVehicles: seq of Vehicle :=[]; -- Vehicles available in the hospital to provide emergency assistance
-		public unavailableVehicles: seq of Vehicle :=[]; -- Vehicles that are providing assistance to an emergency
-		public onGoingEmergencies: seq of Patient :=[]; -- Emergencies waiting for assistance from one or more vehicles
-		public hospitalAssignments: seq of HospitalAssignment :=[]; -- Assignments from  doctors to patients
-		public emergencyAssignments: seq of EmergencyAssignment :=[]; -- Vehicle assistances to emergencies
+		public static capacity: PatientCapacity :=0;
+		public static level: HospitalLevel :=0;
+		public static waitingList: seq of Patient :=[]; -- Patients waiting to be assigned; there cannot be more patients than the hospital capacity
+		public static availableMedics: seq of Medic :=[]; -- Medics available in the hospital
+		public static unavailableMedics: seq of Medic :=[]; -- Medics assigned to an appointment with a patient
+		public static availableVehicles: seq of Vehicle :=[]; -- Vehicles available in the hospital to provide emergency assistance
+		public static unavailableVehicles: seq of Vehicle :=[]; -- Vehicles that are providing assistance to an emergency
+		public static onGoingEmergencies: seq of Patient :=[]; -- Emergencies waiting for assistance from one or more vehicles
+		public static hospitalAssignments: seq of HospitalAssignment :=[]; -- Assignments from  doctors to patients
+		public static emergencyAssignments: seq of EmergencyAssignment :=[]; -- Vehicle assistances to emergencies
 	operations
 	
 	
@@ -34,7 +37,7 @@ class Hospital -- Represents a Health Unit
 				return self;
 			);
 		-- Assigns a medic, if avaliable
-		public assignMedicToPatient: Patient * Medic ==> ()
+		public static assignMedicToPatient: Patient * Medic ==> (HospitalAssignment)
 		 assignMedicToPatient(p,m) == (
 			
 			dcl auxAssignment: HospitalAssignment := {|->};
@@ -43,6 +46,7 @@ class Hospital -- Represents a Health Unit
 			availableMedics := remove[Medic](m,availableMedics);
 			unavailableMedics := unavailableMedics^[m];
 			hospitalAssignments := hospitalAssignments^[auxAssignment];
+			return auxAssignment;
 		)
 		pre
 			--Medic is available and in medics list
