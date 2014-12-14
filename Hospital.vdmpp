@@ -113,8 +113,8 @@ class Hospital -- Represents a Health Unit
 	(
 		dcl auxAssignment: EmergencyAssignment := {|->};
 			auxAssignment := (auxAssignment :-> {p}) munion {v |-> p};
-			availableMedics := remove[Vehicle](v,availableVehicles);
-			unavailableMedics := unavailableVehicles^[v];
+			availableVehicles := remove[Vehicle](v,availableVehicles);
+			unavailableVehicles := unavailableVehicles^[v];
 			emergencyAssignments := emergencyAssignments^[auxAssignment];
 	)
 	
