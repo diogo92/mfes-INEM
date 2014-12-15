@@ -1,24 +1,24 @@
 class Position
-
-	instance variables
-		public xcoord: real;
-		public ycoord: real;
-	
-	operations
-		public Position: real * real ==> Position
-			Position(x,y) == (
-				xcoord := x;
-				ycoord := y;
-				return self;
-			);
-		
-		public getDistance: real * real ==> real
-			getDistance(x,y) == (
-				return sqrt(((xcoord - x) * (xcoord - x)) + ((ycoord - y) * (ycoord - y)));
-			);
-
-	functions
-		sqrt(x: nat) r: real
-			post r * r = x and r >= 0
-
+							types
+								public xCoord=real;
+								public yCoord=real;
+							values
+							-- TODO Define values here
+							instance variables
+										public coordX:xCoord;
+										public coordY:yCoord;
+										private contents : seq of int := [];
+										private capacity:  nat;
+										inv len contents <= capacity;
+							operations
+							
+								public getDistanceTo: Position ==>real
+										getDistanceTo(p) == (
+											return sqrt(((p.coordX-coordX)*(p.coordX-coordX))+((p.coordY-coordY)*(p.coordY-coordY)));
+										);
+										
+							functions
+							-- TODO Define functiones here
+							traces
+							-- TODO Define Combinatorial Test Traces here
 end Position

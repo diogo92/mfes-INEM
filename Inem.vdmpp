@@ -1,14 +1,29 @@
 class Inem
 types
--- TODO Define types here
+	public Emergency = token;
+	
 values
--- TODO Define values here
 instance variables
--- TODO Define instance variables here
+	public static emergencies : seq of Emergency :=[];
+	public static hospitals: seq of Hospital :=[];
+	
 operations
--- TODO Define operations here
+	public Inem: seq of Hospital ==> Inem
+			Inem(hospitalList) == (
+				hospitals:=hospitalList;
+				return self;
+			);
+			
+	
+	public attendEmergency: Emergency ==>()
+		attendEmergency(em) == (
+			return;
+		);
 functions
--- TODO Define functiones here
+	
+	--public bestHospital(em:Emergency) res: Hospital ==
+	
+--	;
 traces
 -- TODO Define Combinatorial Test Traces here
 end Inem
