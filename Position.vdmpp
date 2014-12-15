@@ -5,20 +5,30 @@ class Position
 							values
 							-- TODO Define values here
 							instance variables
-										public coordX:xCoord;
-										public coordY:yCoord;
+										public coordX:xCoord :=0;
+										public coordY:yCoord :=0;
 										private contents : seq of int := [];
 										private capacity:  nat;
 										inv len contents <= capacity;
 							operations
-							
+								
+								SquareRoot : real * real ==> real
+									SquareRoot (r,e) ==
+									(dcl x:real := 1,
+									nextx: real := r;
+									while abs (x - nextx) >= e * x do
+									( x := nextx;
+									nextx := ((r / x) + x) / 2;
+									);
+									return nextx
+								);
+								
 								public getDistanceTo: Position ==>real
 										getDistanceTo(p) == (
-											return sqrt(((p.coordX-coordX)*(p.coordX-coordX))+((p.coordY-coordY)*(p.coordY-coordY)));
+											return SquareRoot((((p.coordX-coordX)*(p.coordX-coordX))+((p.coordY-coordY)*(p.coordY-coordY))),0.0001);
 										);
 										
 							functions
-							-- TODO Define functiones here
 							traces
 							-- TODO Define Combinatorial Test Traces here
 end Position

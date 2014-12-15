@@ -1,6 +1,11 @@
 class Inem
 types
-	public Emergency = token;
+	-- An emergency that requires assistance pos indicates the position, patient refers to the person to be assisted
+	-- and access indicates the quality/type of access to the position i.e. if it is a village with bad road access, a mountain.
+	public Emergency::
+		patient:Patient
+		pos:Position
+		access: <EASY> | <MODERATE> | <HARD> ;
 	
 values
 instance variables
@@ -22,8 +27,8 @@ operations
 functions
 	
 	--public bestHospital(em:Emergency) res: Hospital ==
-	
---	;
+		
+	--;
 traces
 -- TODO Define Combinatorial Test Traces here
 end Inem
