@@ -21,8 +21,7 @@ class Hospital -- Represents a Health Unit
 		public static availableMedics: seq of Medic :=[]; -- Medics available in the hospital
 		public static unavailableMedics: seq of Medic :=[]; -- Medics assigned to an appointment with a patient
 		public static availableVehicles: seq of Vehicle :=[]; -- Vehicles available in the hospital to provide emergency assistance
-		public static unavailableVehicles: seq of Vehicle :=[]; -- Vehicles that are providing assistance to an emergency
-		public static onGoingEmergencies: seq of Patient :=[]; -- Emergencies waiting for assistance from one or more vehicles
+		public static unavailableVehicles: seq of Vehicle :=[]; -- Vehicles that are providing assistance to an emergencys
 		public static hospitalAssignments: seq of HospitalAssignment :=[]; -- Assignments from  doctors to patients
 		public static emergencyAssignments: seq of EmergencyAssignment :=[]; -- Vehicle assistances to emergencies
 	operations

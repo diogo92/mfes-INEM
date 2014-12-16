@@ -9,7 +9,11 @@ types
 	
 values
 instance variables
+
+-- List of on going emergencies
 	public static emergencies : seq of Emergency :=[];
+	
+-- List of hospitals
 	public static hospitals: seq of Hospital :=[];
 	
 operations
@@ -20,15 +24,29 @@ operations
 			);
 			
 	
+	-- assigns an hospital to assist an emergency
 	public attendEmergency: Emergency ==>()
 		attendEmergency(em) == (
 			return;
 		);
+	
+	-- checks the hospital best suited to attend an emergency, given the location and condition of the patient 
+	
+	--public bestHospital: Emergency ==> Hospital
+	--	bestHospital(em) == (
+	--		for e in set elems hospitals do(
+	--			if inRange(hospitals[e].location,em.pos) then
+	--		)
+	--	);
+		
+		
+		-- Checks if two positions have a small distance between them
+		public inRange: Position * Position ==> bool
+			inRange(p1,p2) == (
+				return p1.getDistanceTo(p2)< 25 
+			);
 functions
 	
-	--public bestHospital(em:Emergency) res: Hospital ==
-		
-	--;
 traces
--- TODO Define Combinatorial Test Traces here
+
 end Inem
