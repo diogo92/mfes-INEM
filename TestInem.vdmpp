@@ -4,6 +4,8 @@ Class where the tests are implemented
 */
 instance variables
      i : Inem := new Inem(6);
+     
+      numEmergencies:nat:=0;
 traces
         
 operations
@@ -19,115 +21,43 @@ operations
    assertEqual(newer, old) == (
    			return newer = old;
    );
-            
-   --test the inicial configuration of the system so check if the correct number of sensors is added            
-   private testConfiguration: () ==> ()
-   testConfiguration() ==
-   (
-   		dcl b : bool;
-			c.addFireSensor(3);
-   		b := assertSensor(10);
-   		if b 
-   		then IO`println("Correct Number of Sensors added")
-   		else (IO`println("Incorrect Number of Sensors added");
-   			IO`println("Expected: ");
-   			IO`println(10);
-   			IO`println("Found: ");
-   			IO`println(c.numSensor););
-    );
-    
-   --tests the password change
-   private testChangePassword: () ==> ()
-   testChangePassword() ==
-   (
-   		dcl b : bool;
-			c.changePassword("presentation");
-			
-			b := assertEqual("presentation",c.getPassword());
-			if b 
-   		then IO`println("Password Changed")
-   		else IO`println("Password didn't change");
-   );
    
-    --tests the activation/deactivation of the system 
-  	private testSystemActivation: () ==> ()
-  	testSystemActivation() ==
+   --tests if an emergency is correctly assisted. A hospital best suited to attend it
+   -- should dispatch a vehicle and the patient should be put in the waiting list
+   -- of the hospital
+   private testEmergency: () ==> ()
+   	testEmergency() ==
    	(
-   		c.addSensor(s1);
-			c.turnOnMotionSensors("qwerty");
-			s1.VerifyMovement(true);
-			c.turnOffMotionSensors("qwerty");
+   		i.attendEmergency(emergency);
    	);
    	
-   	--tests the passage of time after the sensor is activated
-   	private testTimePassage: () ==> ()
-  	testTimePassage() ==
-   	(
-   		c.addSensor(s1);
-			c.turnOnMotionSensors("qwerty");
-			s1.VerifyMovement(true);
-			c.tick();
+   private makeEmergency:() ==> Inem`Emergency
+   		makeEmergency() ==
+   		(
+   			dcl em:Inem`Emergency;
+   			dcl pat:Patient;
+   			dcl pos:Position:=new Position(MATH`rand(999)+1,MATH`rand(999)+1);
+   			dcl accessN: nat:= MATH`rand(2)+1;
+   			dcl access: <EASY> | <MODERATE> | <HARD> ;
+   			if(accessN = 1) then access:=<EASY>
+   				else(if(accessN = 2) then access:=<MODERATE>
+   					else(access:=<HARD>));
+   			em.patient:=pat;
+   			em.pos:=pos;
+   			em.access:=access;
+   			return em;
    	);
    	
-   	--tests the number of tries pf the password before the police is called
-   	private testWrongPassword: () ==> ()
-  	 testWrongPassword() ==
-   	(
-   		c.addSensor(s1);
-			c.turnOnMotionSensors("qwerty");
-			s1.VerifyMovement(true);
-			c.turnOffMotionSensors("something");
-			c.turnOffMotionSensors("something");
-			c.turnOffMotionSensors("something");
-   	);
-   	
-   	--tests the detection of fire in the house
-   	private testFireDetection: () ==> ()
-  	 testFireDetection() ==
-   	(
-   		c.addSensor(s2);
-   		c.addSensor(s3);
-   		s2.VerifyTemperature(500);
-   		s3.VerifySmoke(true);
-   	);
-    
-    --tests to see if the sensors malfunction as expected
-    private testMalfunction: () ==> ()
-  	 testMalfunction() ==
-   	(
-   		dcl b : bool;
-   		c.addSensor(s2);
-   		s2.VerifyTemperature(800);
-   		b := assertFalse(s2.getWorking());
-   		if b
-   		then IO`println("Test Succedded Sensor Not Working")
-   		else IO`println("Test Failed Sensor Still Working");
-   	);
-    
-     public static main: () ==> ()
-     main() ==
-     (
-    		IO`println("Test Initial Configuration");
-        new TestAlarmCentral().testConfiguration();
-        IO`println(" ");
-        IO`println("Test Change Password");
-        new TestAlarmCentral().testChangePassword();
-        IO`println(" ");
-        IO`println("Test System Activation");
-        new TestAlarmCentral().testSystemActivation();
-        IO`println(" ");
-        IO`println("Test Time Passage");
-        new TestAlarmCentral().testTimePassage();
-        IO`println(" ");
-        IO`println("Test Wrong Password");
-        new TestAlarmCentral().testWrongPassword();
-        IO`println(" ");
-        IO`println("Test Fire Detection");
-        new TestAlarmCentral().testFireDetection();
-        IO`println(" ");
-        IO`println("Test Malfunction");
-        new TestAlarmCentral().testMalfunction();
-                        
-      );
+   	private generateEmergencies:nat1 ==>()
+   		generateEmergencies(numEm)==(
+   			dcl n:nat:=1;
+   			dcl em:Inem`Emergency;
+				while n<=numEm do(
+					em:=makeEmergency();
+					n:=n+1;
+					numEmergencies:= numEmergencies+1;
+					i.addEmergency(em);
+				);
+   		);
       
 end TestInem

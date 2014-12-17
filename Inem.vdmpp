@@ -5,14 +5,14 @@ types
 	public Emergency::
 		patient:Patient
 		pos:Position
-		access: <EASY> | <MODERATE> | <HARD> ;
+		access: <EASY>|<MODERATE>|<HARD>
+		assignedHospital: Hospital;
 	
 values
 instance variables
  public numHospitals : nat := 0;
 -- List of on going emergencies
 	public static emergencies : seq of Emergency :=[];
-	
 -- List of hospitals
 	public static hospitals: seq of Hospital :=[];
 	
@@ -33,9 +33,31 @@ operations
 	-- assigns an hospital to assist an emergency
 	public attendEmergency: Emergency ==>()
 		attendEmergency(em) == (
-			return;
+			emergencies:=tl emergencies;
+		)
+		
+		pre
+		-- emergency must be in emergency list
+			true
+			
+		post
+		
+		-- emergency is being attended, so it should be out of the emergency list
+			true
+		;
+	
+	public attendAllEmergencies:() ==>()
+		attendAllEmergencies()==
+		(
+		
 		);
 		
+	public addEmergency: Emergency ==>()
+			addEmergency(em) == (
+				emergencies:=emergencies^[em];
+				numEmergencies:= numEmergencies+1;
+	);
+	
 	public addHospital:()==>()
 		addHospital()==(
 			dcl nPatientCap:nat:=MATH`rand(19)+1;
