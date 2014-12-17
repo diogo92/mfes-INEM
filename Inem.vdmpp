@@ -9,7 +9,7 @@ types
 	
 values
 instance variables
-
+ public numHospitals : nat := 0;
 -- List of on going emergencies
 	public static emergencies : seq of Emergency :=[];
 	
@@ -17,9 +17,15 @@ instance variables
 	public static hospitals: seq of Hospital :=[];
 	
 operations
-	public Inem: seq of Hospital ==> Inem
-			Inem(hospitalList) == (
-				hospitals:=hospitalList;
+	public Inem: nat1 ==> Inem
+			Inem(numOfHospitals) == (
+				dcl i:nat;
+					i:=1;
+					while i<=numOfHospitals do(
+						addHospital();
+							i:=i+1;
+							numHospitals := numHospitals+1;
+							);
 				return self;
 			);
 			
@@ -29,6 +35,15 @@ operations
 		attendEmergency(em) == (
 			return;
 		);
+		
+	public addHospital:()==>()
+		addHospital()==(
+			dcl nPatientCap:nat:=MATH`rand(19)+1;
+			dcl nHospLevel:nat:=MATH`rand(2)+1;
+			dcl nMedics:nat:=MATH`rand(14)+1;
+			dcl nVehicles:nat:=MATH`rand(9)+1;
+			hospitals:=hospitals^[new Hospital(nPatientCap,nHospLevel,nMedics,nVehicles)];
+	);
 	
 	-- checks the hospital best suited to attend an emergency, given the location and condition of the patient 
 	

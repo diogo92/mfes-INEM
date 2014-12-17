@@ -16,6 +16,8 @@ class Hospital -- Represents a Health Unit
 		
 	instance variables
 		public static capacity: PatientCapacity :=0;
+		public numOfMedics: nat :=0;
+		public numOfVehicles: nat :=0;
 		public static level: HospitalLevel :=0;
 		public static waitingList: seq of Patient :=[]; -- Patients waiting to be assigned; there cannot be more patients than the hospital capacity
 		public static availableMedics: seq of Medic :=[]; -- Medics available in the hospital
@@ -27,13 +29,38 @@ class Hospital -- Represents a Health Unit
 	operations
 	
 	
-		public Hospital: nat * nat * seq of Medic * seq of Vehicle ==> Hospital
+		public Hospital: nat1 * nat1 * nat1 * nat1 ==> Hospital
 			Hospital(patientCap,hLevel,medics,vehicles) == (
+				dcl i:nat;
 				capacity:= patientCap;
 				level:=hLevel;
-				availableMedics:=medics;
-				availableVehicles:=vehicles;
+					i:=1;
+					while i<=medics do(
+						addMedic();
+							i:=i+1;
+							numOfMedics := numOfMedics+1;
+							);
+					i:=1;
+					while i<=vehicles do(
+						addVehicle();
+							i:=i+1;
+							numOfVehicles := numOfVehicles+1;
+							);
 				return self;
+			);
+		
+		-- Adds a medic to the list
+		public addMedic: () ==>()
+			addMedic()== (
+				dcl m:Medic;
+				availableMedics:=availableMedics^[m];
+			);
+		
+		-- Adds a vehicle to the list
+		public addVehicle:()==>()
+			addVehicle()== (
+				dcl v:Vehicle;
+				availableVehicles:=availableVehicles^[v];
 			);
 		-- Assigns a medic, if avaliable
 		public static assignMedicToPatient: Patient * Medic ==> (HospitalAssignment)
