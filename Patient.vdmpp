@@ -1,14 +1,24 @@
 class Patient
+
 types
--- TODO Define types here
+	public ConditionColor = <RED>|<YELLOW>|<GREEN>;
+
 values
 -- TODO Define values here
+
 instance variables
--- TODO Define instance variables here
+	private patientCondition: ConditionColor := nil;
+
 operations
--- TODO Define operations here
+	public Patient: token ==> Patient
+			Patient(c) == (
+				patientCondition := c;
+			);
+
 functions
 -- TODO Define functiones here
+
 traces
 -- TODO Define Combinatorial Test Traces here
+
 end Patient
