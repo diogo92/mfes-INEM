@@ -66,6 +66,7 @@ operations
 	public bestHospital: Emergency ==> Hospital
 		bestHospital(em) == (
 			dcl temp : Hospital;
+			temp.pos:=new Position(10000000,100000000);
 			for h = 1 to len hospitals do
 				if (em.pos.getDistanceTo(temp.pos)>em.pos.getDistanceTo(hospitals(h).pos)) then(
 					if(hospitals(h).hasVehicle(bestVehicleTypeToSend(em)) and len hospitals(h).waitingList<hospitals(h).capacity) then

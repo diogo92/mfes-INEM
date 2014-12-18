@@ -2,8 +2,9 @@ class TestInem
 /*
 Class where the tests are implemented   
 */
+types
+	TestResult::boolean:bool message:seq of char;
 instance variables
-     i : Inem := new Inem(6);
      
       numEmergencies:nat:=0;
 traces
@@ -13,11 +14,66 @@ operations
    --tests if an emergency is correctly assisted. A hospital best suited to attend it
    -- should dispatch a vehicle and the patient should be put in the waiting list
    -- of the hospital
-   private testEmergency: () ==> ()
-   	testEmergency() ==
-   	(
-   		i.attendAllEmergencies();
-   	);
+   	
+   	
+   	-- Test for Requirement 1
+   	private testPatientAssignedToMedic:() ==> TestResult
+   		testPatientAssignedToMedic() == (
+   			dcl res:TestResult;
+    		dcl i : Inem := new Inem(1);
+    		dcl em:Inem`Emergency;
+    		dcl lv:Transport`Level:=<AMBULANCE>;
+    		dcl h:Hospital;
+    		dcl hp:Hospital`HospitalPatient; -- The patient, when he/she enters the hospital
+   			res.boolean:= true;
+   			res.message:="Test passed";
+    		em.patient:= new Patient(<YELLOW>);
+    		em.pos:=new Position(MATH`rand(200),MATH`rand(200));
+    		em.access:=<EASY>;
+    		h:=i.bestHospital(em);
+    		h.addVehicle(lv);
+    		-- TEST: initial waiting list should be empty
+    		if not (len h.waitingList = 0) then (res.boolean:=false; res.message:="Inital waiting list was not empty"; return res;);
+    		h.attendEmergency(em,lv);
+    		hp:=h.waitingList(1);
+    		-- TEST: Patient is put on waiting list
+    		if not (hp.patientCondition = em.patient.patientCondition) then (res.boolean:=false; res.message:="Patient was not put in waiting list"; return res;);
+    		-- assign a medic to a patient
+    		h.assignMedicToPatient(hp,h.availableMedics(1));
+    		-- TEST: patient out of waiting list, so it should be empty. Patient was assigned a medic, so assignment should be made and the medic should be in the unavailable list
+    		if not (len h.waitingList =0 and h.hospitalAssignments(1)={h.unavailableMedics(1)|->hp}) then (res.boolean:=false; res.message:="Waiting list not empty OR assignment not correctly made. Maybe the medic was not put in the unavailable list"; return res;);
+    		return res;
+   		);
+   		
+   		-- Test for Requirement 2
+   		private testAdequateVehicle:() ==> TestResult
+   			testAdequateVehicle()==(
+   			dcl res:TestResult;
+    		dcl i : Inem := new Inem(1);
+    		dcl em:Inem`Emergency;
+    		dcl lv:Transport`Level;
+   			res.boolean:= true;
+   			res.message:="Test passed";
+    		em.patient:= new Patient(<GREEN>);
+    		em.pos:=new Position(MATH`rand(200),MATH`rand(200));
+    		em.access:=<EASY>;
+    		lv:=i.bestVehicleTypeToSend(em);
+    		-- TEST: the patient is not in bad conditon, and the access to the emergency site is easy, so a motorcycle should be chosen
+    		if not lv=<MOTORCYCLE> then (res.boolean:=false; res.message:="Wrong vehicle chosen, should be <MOTORCYCLE>"; return res;);
+    		
+    		em.patient:= new Patient(<YELLOW>);
+    		lv:=i.bestVehicleTypeToSend(em);
+    		-- TEST: the patient is in yellow condition, and access to site is easy so an ambulance should be sent
+    		if not lv=<AMBULANCE> then (res.boolean:=false; res.message:="Wrong vehicle chosen, should be <AMBULANCE>"; return res;);
+    		
+    		em.access:=<HARD>;
+    		lv:=i.bestVehicleTypeToSend(em);
+    		
+    		-- TEST: the patient is in yellow condition, but access is now hard, so a helicopter should be sent
+    		if not lv=<HELICOPTER> then (res.boolean:=false; res.message:="Wrong vehicle chosen, should be <HELICOPTER>"; return res;);
+    		
+    		return res;
+   		);
    	
    private makeEmergency:() ==> Inem`Emergency
    		makeEmergency() ==
@@ -44,8 +100,22 @@ operations
 					em:=makeEmergency();
 					n:=n+1;
 					numEmergencies:= numEmergencies+1;
-					i.addEmergency(em);
+				--	i.addEmergency(em);
 				);
    		);
+   		
+   		
+   		public main:() ==> ()
+   			main()==(
+	   			dcl t1:TestResult:=testPatientAssignedToMedic();
+	   			dcl t2:TestResult:=testAdequateVehicle();
+	   			IO`println("Test Requirement 1");
+	   			IO`println(" ");
+	   			IO`println(t1.message);
+	   			IO`println(" ");
+	   			IO`println("Test Requirement 2");
+	   			IO`println(" ");
+	   			IO`println(t2.message);
+   			);
       
 end TestInem

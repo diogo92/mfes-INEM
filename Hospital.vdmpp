@@ -31,6 +31,8 @@ class Hospital -- Represents a Health Unit
 		public Hospital: nat1 * nat1 * nat1 * nat1 * Position ==> Hospital
 			Hospital(patientCap,hLevel,medics,vehicles,loc) == (
 				dcl i:nat;
+				dcl v:nat;
+				dcl lv:Transport`Level;
 				pos:=loc;
 				capacity:= patientCap;
 				level:=hLevel;
@@ -42,7 +44,9 @@ class Hospital -- Represents a Health Unit
 							);
 					i:=1;
 					while i<=vehicles do(
-						addVehicle();
+						v:=MATH`rand(2)+1;
+						if(v=1) then lv:=<MOTORCYCLE> else if (v=2) then lv := <AMBULANCE> else lv:=<HELICOPTER>;
+						addVehicle(lv);
 							i:=i+1;
 							numOfVehicles := numOfVehicles+1;
 							);
@@ -57,15 +61,15 @@ class Hospital -- Represents a Health Unit
 			);
 		
 		-- Adds a vehicle to the list
-		public addVehicle:()==>()
-			addVehicle()== (
-				dcl v:Vehicle;
+		public addVehicle:(Transport`Level)==>()
+			addVehicle(lv)== (
+				dcl v:Vehicle:= new Transport(lv);
 				availableVehicles:=availableVehicles^[v];
 			);
 			
 			
 		-- Assigns a medic, if avaliable
-		public static assignMedicToPatient: HospitalPatient * Medic ==> (HospitalAssignment)
+		public static assignMedicToPatient: HospitalPatient * Medic ==> ()
 		 assignMedicToPatient(p,m) == (
 			
 			dcl auxAssignment: HospitalAssignment := {|->};
@@ -74,7 +78,6 @@ class Hospital -- Represents a Health Unit
 			availableMedics := remove[Medic](m,availableMedics);
 			unavailableMedics := unavailableMedics^[m];
 			hospitalAssignments := hospitalAssignments^[auxAssignment];
-			return auxAssignment;
 		)
 		pre
 			--Medic is available and in medics list
@@ -147,7 +150,7 @@ class Hospital -- Represents a Health Unit
 		for i=1 to len availableVehicles do
 			if(availableVehicles(i).access=trl) then nVehicle:=i;
 		
-		auxAssignment := (auxAssignment :-> {p}) munion {availableVehicles(nVehicle) |-> em.patient};
+		auxAssignment := (auxAssignment :-> {p}) munion {availableVehicles(nVehicle) |-> p};
 		availableVehicles := remove[Vehicle](availableVehicles(nVehicle),availableVehicles);
 		unavailableVehicles := unavailableVehicles^[availableVehicles(nVehicle)];
 		emergencyAssignments := emergencyAssignments^[auxAssignment];
