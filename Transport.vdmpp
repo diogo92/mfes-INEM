@@ -1,14 +1,14 @@
 class Transport
 	types
-	-- TODO Define types here
+		public Level = <MOTORCYCLE>|<AMBULANCE>|<HELICOPTER>;
 	values
-	-- TODO Define values here
 	instance variables
-	-- TODO Define instance variables here
+		public access: Level := nil;
 	operations
-	-- TODO Define operations here
+		public Transport: token ==> Transport
+			Transport(a) == (
+			access := a;
+		);
 	functions
-	-- TODO Define functiones here
 	traces
-	-- TODO Define Combinatorial Test Traces here
 end Transport
