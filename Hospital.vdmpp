@@ -2,24 +2,23 @@ class Hospital -- Represents a Health Unit
 	types
 		public HospitalLevel = nat;
 		public BraceletColor = <RED>|<YELLOW>|<GREEN>;
-		--public Location = Position;
-		public Location = token; -- Location of a Health Unit
+		public Location = Position;
+		public HospitalPatient:: patientCondition: Patient`ConditionColor;
 		public PatientCapacity = nat; -- Max patient capacity
 		public MedicsInHospital = nat;
-		--public Patient = Patient;
-		public Patient :: braceletColor: BraceletColor; 
 	  public Medic = token; 
-	  --public Vehicle = Transport;
-		public Vehicle = token;
-		public HospitalAssignment = inmap Medic to Patient; 
-		public EmergencyAssignment = inmap Vehicle to Patient; 
+	  public Vehicle = Transport;
+		public HospitalAssignment = inmap Medic to HospitalPatient; 
+		public EmergencyAssignment = inmap Vehicle to HospitalPatient; 
 		
 	instance variables
+	
+		public pos : Location;
 		public static capacity: PatientCapacity :=0;
 		public numOfMedics: nat :=0;
 		public numOfVehicles: nat :=0;
 		public static level: HospitalLevel :=0;
-		public static waitingList: seq of Patient :=[]; -- Patients waiting to be assigned; there cannot be more patients than the hospital capacity
+		public static waitingList: seq of HospitalPatient :=[]; -- Patients waiting to be assigned; there cannot be more patients than the hospital capacity
 		public static availableMedics: seq of Medic :=[]; -- Medics available in the hospital
 		public static unavailableMedics: seq of Medic :=[]; -- Medics assigned to an appointment with a patient
 		public static availableVehicles: seq of Vehicle :=[]; -- Vehicles available in the hospital to provide emergency assistance
@@ -29,9 +28,10 @@ class Hospital -- Represents a Health Unit
 	operations
 	
 	
-		public Hospital: nat1 * nat1 * nat1 * nat1 ==> Hospital
-			Hospital(patientCap,hLevel,medics,vehicles) == (
+		public Hospital: nat1 * nat1 * nat1 * nat1 * Position ==> Hospital
+			Hospital(patientCap,hLevel,medics,vehicles,loc) == (
 				dcl i:nat;
+				pos:=loc;
 				capacity:= patientCap;
 				level:=hLevel;
 					i:=1;
@@ -62,13 +62,15 @@ class Hospital -- Represents a Health Unit
 				dcl v:Vehicle;
 				availableVehicles:=availableVehicles^[v];
 			);
+			
+			
 		-- Assigns a medic, if avaliable
-		public static assignMedicToPatient: Patient * Medic ==> (HospitalAssignment)
+		public static assignMedicToPatient: HospitalPatient * Medic ==> (HospitalAssignment)
 		 assignMedicToPatient(p,m) == (
 			
 			dcl auxAssignment: HospitalAssignment := {|->};
 			auxAssignment := (auxAssignment :-> {p}) munion {m |-> p};
-			waitingList := remove[Patient](p,waitingList);
+			waitingList := remove[HospitalPatient](p,waitingList);
 			availableMedics := remove[Medic](m,availableMedics);
 			unavailableMedics := unavailableMedics^[m];
 			hospitalAssignments := hospitalAssignments^[auxAssignment];
@@ -79,13 +81,13 @@ class Hospital -- Represents a Health Unit
 			elemExists[Medic](availableMedics,m)
 			
 			and -- Patient in patients list
-			elemExists[Patient](waitingList,p)
+			elemExists[HospitalPatient](waitingList,p)
 	
 		post
 			-- Assigned medic removed from available list, and respective patient removed from waiting list
 			not elemExists[Medic](availableMedics,m) 
 			and elemExists[Medic](unavailableMedics,m)
-			and not elemExists[Patient](waitingList,p)
+			and not elemExists[HospitalPatient](waitingList,p)
 			
 			-- Assignment is in hospital assignment list
 			and elemExists[HospitalAssignment](hospitalAssignments,{m|->p})
@@ -93,11 +95,12 @@ class Hospital -- Represents a Health Unit
 		
 		
 		-- Put a patient in the waiting list, freeing the vehicle that did the transportation
-		public putPatientInWaitingList: Patient * Vehicle * EmergencyAssignment ==>()
+		public putPatientInWaitingList: HospitalPatient * Vehicle * EmergencyAssignment ==>()
 		 putPatientInWaitingList(p,v,assignment) ==(
+		 	
 			unavailableVehicles := remove[Vehicle](v,unavailableVehicles);
 			availableVehicles := availableVehicles^[v];
-			waitingList := insertInOrder(waitingList,p);
+			if not(p.patientCondition =<GREEN>)then waitingList := insertInOrder(waitingList,p);
 			emergencyAssignments := remove[EmergencyAssignment](assignment,emergencyAssignments);
 		)
 		pre
@@ -115,7 +118,7 @@ class Hospital -- Represents a Health Unit
 		
 		
 		-- A medic ends its apointment with a patient, freeing him
-		public freeMedic: Medic * Patient * HospitalAssignment ==>()
+		public freeMedic: Medic * HospitalPatient * HospitalAssignment ==>()
 		 freeMedic(m,p, assignment) ==(
 			unavailableMedics := remove[Medic](m,unavailableMedics);
 			availableMedics := availableMedics^[m];
@@ -134,40 +137,47 @@ class Hospital -- Represents a Health Unit
 		;
 	
 	-- Assign a vehicle to attend an emergency
-	public attendEmergency: Patient * Vehicle ==>()
-	attendEmergency(p,v)==
+	public attendEmergency: Inem`Emergency * Transport`Level ==>()
+	attendEmergency(em,trl)==
 	(
 		dcl auxAssignment: EmergencyAssignment := {|->};
-			auxAssignment := (auxAssignment :-> {p}) munion {v |-> p};
-			availableVehicles := remove[Vehicle](v,availableVehicles);
-			unavailableVehicles := unavailableVehicles^[v];
-			emergencyAssignments := emergencyAssignments^[auxAssignment];
+		dcl nVehicle:nat:=0;
+		dcl p:HospitalPatient;
+		p.patientCondition := em.patient.patientCondition;
+		for i=1 to len availableVehicles do
+			if(availableVehicles(i).access=trl) then nVehicle:=i;
+		
+		auxAssignment := (auxAssignment :-> {p}) munion {availableVehicles(nVehicle) |-> em.patient};
+		availableVehicles := remove[Vehicle](availableVehicles(nVehicle),availableVehicles);
+		unavailableVehicles := unavailableVehicles^[availableVehicles(nVehicle)];
+		emergencyAssignments := emergencyAssignments^[auxAssignment];
 	)
 	
 	pre
 		-- Bringing a patient must not overflow the capacity of the hospital
-			len waitingList < capacity and
-		-- Vehicle is available for emergency
-		elemExists[Vehicle](availableVehicles,v) and not elemExists[Vehicle](unavailableVehicles,v)
-	post
-		-- Vehicle is not available for other emergencies
-		elemExists[Vehicle](unavailableVehicles,v) and not elemExists[Vehicle](availableVehicles,v)
-		-- Emergency Assignment in list
-		and elemExists[EmergencyAssignment](emergencyAssignments,{v|->p})
-		;
+			len waitingList < capacity
+	;
 
+		public hasVehicle: Transport`Level  ==> bool
+			hasVehicle(vlevel)==
+			(
+				for n=1 to len availableVehicles do
+					if(availableVehicles(n).access=vlevel)
+						then return true;
+				return false;
+			);
 functions
 
-		public insertInOrder(s:seq of Patient,p:Patient) res: seq of Patient ==
-			if(p.braceletColor = <RED>) then(
-				if(not exists i in set inds s & s(i).braceletColor=<RED>)
+		public insertInOrder(s:seq of HospitalPatient,p:HospitalPatient)  res: seq of HospitalPatient ==
+			if(p.patientCondition = <RED>) then(
+				if(not exists i in set inds s & s(i).patientCondition=<RED>)
 					then([p]^s)
 					else(
 						insertInOrder(tl s,p)
 					)
 			)
-			else if(p.braceletColor = <YELLOW>) then(
-				if(not exists i in set inds s & s(i).braceletColor=<RED> and not exists j in set inds s & s(j).braceletColor=<YELLOW>)
+			else if(p.patientCondition = <YELLOW>) then(
+				if(not exists i in set inds s & s(i).patientCondition=<RED> and not exists j in set inds s & s(j).patientCondition=<YELLOW>)
 					then([p]^s)
 					else(
 						insertInOrder(tl s,p)

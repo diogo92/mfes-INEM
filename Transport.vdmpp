@@ -5,7 +5,7 @@ class Transport
 	instance variables
 		public access: Level := nil;
 	operations
-		public Transport: token ==> Transport
+		public Transport: Level ==> Transport
 			Transport(a) == (
 			access := a;
 		);

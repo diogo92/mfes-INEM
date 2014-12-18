@@ -7,10 +7,10 @@ values
 -- TODO Define values here
 
 instance variables
-	private patientCondition: ConditionColor := nil;
+	public patientCondition: ConditionColor := nil;
 
 operations
-	public Patient: token ==> Patient
+	public Patient: ConditionColor ==> Patient
 			Patient(c) == (
 				patientCondition := c;
 			);

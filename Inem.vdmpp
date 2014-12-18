@@ -5,8 +5,7 @@ types
 	public Emergency::
 		patient:Patient
 		pos:Position
-		access: <EASY>|<MODERATE>|<HARD>
-		assignedHospital: Hospital;
+		access: <EASY>|<MODERATE>|<HARD>;
 	
 values
 instance variables
@@ -33,29 +32,23 @@ operations
 	-- assigns an hospital to assist an emergency
 	public attendEmergency: Emergency ==>()
 		attendEmergency(em) == (
-			emergencies:=tl emergencies;
-		)
-		
-		pre
-		-- emergency must be in emergency list
-			true
-			
-		post
-		
-		-- emergency is being attended, so it should be out of the emergency list
-			true
-		;
+			bestHospital(em).attendEmergency(em,bestVehicleTypeToSend(em));
+		);
 	
 	public attendAllEmergencies:() ==>()
 		attendAllEmergencies()==
 		(
-		
+			for n1=1 to len emergencies do
+				attendEmergency(emergencies(n1));
+			
+			for n2=1 to len emergencies do
+				emergencies:=tl emergencies;
+			
 		);
 		
 	public addEmergency: Emergency ==>()
 			addEmergency(em) == (
 				emergencies:=emergencies^[em];
-				numEmergencies:= numEmergencies+1;
 	);
 	
 	public addHospital:()==>()
@@ -64,24 +57,38 @@ operations
 			dcl nHospLevel:nat:=MATH`rand(2)+1;
 			dcl nMedics:nat:=MATH`rand(14)+1;
 			dcl nVehicles:nat:=MATH`rand(9)+1;
-			hospitals:=hospitals^[new Hospital(nPatientCap,nHospLevel,nMedics,nVehicles)];
+			dcl pos:Position:= new Position(MATH`rand(200)+1,MATH`rand(200)+1);
+			hospitals:=hospitals^[new Hospital(nPatientCap,nHospLevel,nMedics,nVehicles,pos)];
 	);
 	
 	-- checks the hospital best suited to attend an emergency, given the location and condition of the patient 
 	
-	--public bestHospital: Emergency ==> Hospital
-	--	bestHospital(em) == (
-	--		for e in set elems hospitals do(
-	--			if inRange(hospitals[e].location,em.pos) then
-	--		)
-	--	);
+	public bestHospital: Emergency ==> Hospital
+		bestHospital(em) == (
+			dcl temp : Hospital;
+			for h = 1 to len hospitals do
+				if (em.pos.getDistanceTo(temp.pos)>em.pos.getDistanceTo(hospitals(h).pos)) then(
+					if(hospitals(h).hasVehicle(bestVehicleTypeToSend(em)) and len hospitals(h).waitingList<hospitals(h).capacity) then
+						temp := hospitals(h);
+					);
+			return temp;
+		);
 		
-		
-		-- Checks if two positions have a small distance between them
-		public inRange: Position * Position ==> bool
-			inRange(p1,p2) == (
-				return p1.getDistanceTo(p2)< 25 
+	public bestVehicleTypeToSend: Emergency ==> Transport`Level
+		bestVehicleTypeToSend(em) == (
+			dcl t:Transport`Level;
+			if(em.patient.patientCondition = <GREEN> and em.access = <EASY>) then(
+				t:=<MOTORCYCLE>;
+			)
+			else(
+				if((em.patient.patientCondition = <YELLOW> or em.patient.patientCondition = <RED>) and em.access = <HARD>)then(
+					t:=<HELICOPTER>;
+				)else(
+					t:=<AMBULANCE>;
+				)
 			);
+			return t;
+		);
 functions
 	
 traces

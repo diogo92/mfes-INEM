@@ -9,18 +9,6 @@ instance variables
 traces
         
 operations
-   private assertFalse: bool ==> bool
-   assertFalse(cond) == return cond = false;
-   
-   private assertSensor: nat ==> bool
-   assertSensor(num) == (
-   			return num = c.numSensor;
-   );
-   
-   private assertEqual: ? * ? ==> bool
-   assertEqual(newer, old) == (
-   			return newer = old;
-   );
    
    --tests if an emergency is correctly assisted. A hospital best suited to attend it
    -- should dispatch a vehicle and the patient should be put in the waiting list
@@ -28,7 +16,7 @@ operations
    private testEmergency: () ==> ()
    	testEmergency() ==
    	(
-   		i.attendEmergency(emergency);
+   		i.attendAllEmergencies();
    	);
    	
    private makeEmergency:() ==> Inem`Emergency
@@ -36,7 +24,7 @@ operations
    		(
    			dcl em:Inem`Emergency;
    			dcl pat:Patient;
-   			dcl pos:Position:=new Position(MATH`rand(999)+1,MATH`rand(999)+1);
+   			dcl pos:Position:=new Position(MATH`rand(200)+1,MATH`rand(200)+1);
    			dcl accessN: nat:= MATH`rand(2)+1;
    			dcl access: <EASY> | <MODERATE> | <HARD> ;
    			if(accessN = 1) then access:=<EASY>

@@ -11,7 +11,12 @@ class Position
 										private capacity:  nat;
 										inv len contents <= capacity;
 							operations
-								
+								public Position: real * real ==> Position
+									Position(x,y) ==
+									(
+										coordX:=x;
+										coordY:=y;
+									);
 								SquareRoot : real * real ==> real
 									SquareRoot (r,e) ==
 									(dcl x:real := 1,
@@ -26,7 +31,8 @@ class Position
 								public getDistanceTo: Position ==>real
 										getDistanceTo(p) == (
 											return SquareRoot((((p.coordX-coordX)*(p.coordX-coordX))+((p.coordY-coordY)*(p.coordY-coordY))),0.0001);
-										);
+								);
+								
 										
 							functions
 							traces
